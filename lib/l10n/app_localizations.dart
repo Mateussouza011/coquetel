@@ -131,6 +131,9 @@ class AppLocalizations {
   String get noIngredients {
     return _getLocalizedValue('noIngredients');
   }
+
+  String get errorLoadingData => 'Erro ao carregar os dados. Por favor, tente novamente.';
+  String get tryAgain => 'Tentar Novamente';
   
   // Método auxiliar para buscar valor no dicionário
   String _getLocalizedValue(String key) {

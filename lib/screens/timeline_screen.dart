@@ -27,6 +27,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
   bool _isLoading = false;
   bool _hasMore = true;
   String _searchQuery = '';
+  bool _hasError = false;
+  String _errorMessage = '';
   
   @override
   void initState() {
@@ -88,6 +90,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     
     setState(() {
       _isLoading = true;
+      _hasError = false;
     });
     
     try {
@@ -111,8 +114,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     } catch (e) {
       setState(() {
         _isLoading = false;
+        _hasError = true;
+        _errorMessage = 'Erro ao carregar os coquetéis: $e';
       });
-      print('Error loading cocktails: $e');
     }
   }
   
@@ -121,32 +125,34 @@ class _TimelineScreenState extends State<TimelineScreen> {
     
     setState(() {
       _isLoading = true;
-      _currentPage++;
+      _hasError = false;
     });
     
     try {
-      final moreCocktails = await _cocktailService.getCocktails(page: _currentPage);
+      _currentPage++;
+      final newCocktails = await _cocktailService.getCocktails(page: _currentPage);
       
-      // Extrair e adicionar novas categorias
+      // Extract unique categories
       Set<String> uniqueCategories = Set.from(_categories);
-      for (var cocktail in moreCocktails) {
+      for (var cocktail in newCocktails) {
         if (cocktail.category.isNotEmpty) {
           uniqueCategories.add(cocktail.category);
         }
       }
       
       setState(() {
-        _cocktails.addAll(moreCocktails);
+        _cocktails.addAll(newCocktails);
         _categories = uniqueCategories.toList()..sort();
         _applyFilters();
         _isLoading = false;
-        _hasMore = moreCocktails.isNotEmpty;
+        _hasMore = newCocktails.isNotEmpty;
       });
     } catch (e) {
       setState(() {
         _isLoading = false;
+        _hasError = true;
+        _errorMessage = 'Erro ao carregar mais coquetéis: $e';
       });
-      print('Error loading more cocktails: $e');
     }
   }
   
@@ -156,8 +162,44 @@ class _TimelineScreenState extends State<TimelineScreen> {
       _searchController.clear();
       _searchQuery = '';
       _selectedCategory = null;
+      _hasError = false;
     });
     return _loadCocktails();
+  }
+  
+  Widget _buildErrorWidget(BuildContext context, AppLocalizations localizations) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.error_outline,
+            color: Theme.of(context).colorScheme.error,
+            size: 60,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            _errorMessage.isNotEmpty 
+                ? _errorMessage 
+                : localizations.errorLoadingData,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 16,
+              color: Theme.of(context).colorScheme.error,
+            ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: _refreshTimeline,
+            icon: const Icon(Icons.refresh),
+            label: Text(localizations.tryAgain),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+          ),
+        ],
+      ),
+    );
   }
   
   @override
@@ -177,7 +219,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
           PopupMenuButton<Locale>(
             icon: const Icon(Icons.language),
             onSelected: (Locale locale) {
-              // Agora temos uma implementação real
               _languageService.changeLocale(locale);
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<Locale>>[
@@ -204,101 +245,104 @@ class _TimelineScreenState extends State<TimelineScreen> {
       body: Column(
         children: [
           // Filtros - barra de pesquisa e categorias
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: localizations.searchHint,
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+          if (!_hasError) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: localizations.searchHint,
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            _searchController.clear();
+                          },
+                        )
+                      : null,
                 ),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                        },
-                      )
-                    : null,
               ),
             ),
-          ),
-          
-          // Filtro de categoria
-          Container(
-            height: 50,
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              children: [
-                Text(
-                  localizations.categoryFilter,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _categories.isEmpty 
-                      ? Center(child: Text(localizations.loadingCategories))
-                      : SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: [
-                              // Opção "Todas"
-                              FilterChip(
-                                label: Text(
-                                  localizations.allCategories,
-                                  style: TextStyle(
-                                    color: _selectedCategory == null 
-                                        ? Theme.of(context).colorScheme.onPrimary 
-                                        : null,
-                                  ),
-                                ),
-                                selected: _selectedCategory == null,
-                                selectedColor: Theme.of(context).colorScheme.primary,
-                                onSelected: (bool selected) {
-                                  setState(() {
-                                    _selectedCategory = null;
-                                    _applyFilters();
-                                  });
-                                },
-                              ),
-                              const SizedBox(width: 8),
-                              // Chips para cada categoria
-                              ..._categories.map((category) => Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: FilterChip(
-                                  label: Text(
-                                    category,
-                                    style: TextStyle(
-                                      color: _selectedCategory == category 
-                                          ? Theme.of(context).colorScheme.onPrimary 
-                                          : null,
+            
+            // Filtro de categoria
+            if (_categories.isNotEmpty)
+              Container(
+                height: 50,
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Row(
+                  children: [
+                    Text(
+                      localizations.categoryFilter,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _categories.isEmpty 
+                          ? Center(child: Text(localizations.loadingCategories))
+                          : SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: [
+                                  // Opção "Todas"
+                                  FilterChip(
+                                    label: Text(
+                                      localizations.allCategories,
+                                      style: TextStyle(
+                                        color: _selectedCategory == null 
+                                            ? Theme.of(context).colorScheme.onPrimary 
+                                            : null,
+                                      ),
                                     ),
+                                    selected: _selectedCategory == null,
+                                    selectedColor: Theme.of(context).colorScheme.primary,
+                                    onSelected: (bool selected) {
+                                      setState(() {
+                                        _selectedCategory = null;
+                                        _applyFilters();
+                                      });
+                                    },
                                   ),
-                                  selected: _selectedCategory == category,
-                                  selectedColor: Theme.of(context).colorScheme.primary,
-                                  onSelected: (bool selected) {
-                                    setState(() {
-                                      _selectedCategory = selected ? category : null;
-                                      _applyFilters();
-                                    });
-                                  },
-                                ),
-                              )).toList(),
-                            ],
-                          ),
-                        ),
+                                  const SizedBox(width: 8),
+                                  // Chips para cada categoria
+                                  ..._categories.map((category) => Padding(
+                                    padding: const EdgeInsets.only(right: 8.0),
+                                    child: FilterChip(
+                                      label: Text(
+                                        category,
+                                        style: TextStyle(
+                                          color: _selectedCategory == category 
+                                              ? Theme.of(context).colorScheme.onPrimary 
+                                              : null,
+                                        ),
+                                      ),
+                                      selected: _selectedCategory == category,
+                                      selectedColor: Theme.of(context).colorScheme.primary,
+                                      onSelected: (bool selected) {
+                                        setState(() {
+                                          _selectedCategory = selected ? category : null;
+                                          _applyFilters();
+                                        });
+                                      },
+                                    ),
+                                  )).toList(),
+                                ],
+                              ),
+                            ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
+          ],
           
           // Contagem de resultados
-          if (_searchQuery.isNotEmpty || _selectedCategory != null)
+          if (!_hasError && (_searchQuery.isNotEmpty || _selectedCategory != null))
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: Align(
@@ -310,45 +354,56 @@ class _TimelineScreenState extends State<TimelineScreen> {
               ),
             ),
           
-          // Lista de coquetéis
+          // Conteúdo principal - Gerenciamento de estados
           Expanded(
             child: RefreshIndicator(
               onRefresh: _refreshTimeline,
-              child: _cocktails.isEmpty && _isLoading
-                  ? Center(child: Text(localizations.loadingMessage))
-                  : _filteredCocktails.isEmpty
-                      ? Center(
-                          child: _searchQuery.isNotEmpty || _selectedCategory != null
-                              ? Text(localizations.noMatchingResults)
-                              : Text(localizations.noResults),
-                        )
-                      : GridView.builder(
-                          controller: _scrollController,
-                          padding: const EdgeInsets.all(8.0),
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: cardCrossAxisCount,
-                            childAspectRatio: isLargeScreen ? 1.2 : 1.0,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                          ),
-                          itemCount: _filteredCocktails.length + 
-                            (_hasMore && _searchQuery.isEmpty && _selectedCategory == null ? 1 : 0),
-                          itemBuilder: (context, index) {
-                            if (index == _filteredCocktails.length) {
-                              return const Center(
-                                child: Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: CircularProgressIndicator(),
-                                ),
-                              );
-                            }
-                            
-                            return CocktailCard(
-                              cocktail: _filteredCocktails[index],
-                              isCompact: isLargeScreen,
-                            );
-                          },
-                        ),
+              child: _isLoading && _cocktails.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const CircularProgressIndicator(),
+                          const SizedBox(height: 16),
+                          Text(localizations.loadingMessage),
+                        ],
+                      ),
+                    )
+                  : _hasError
+                      ? _buildErrorWidget(context, localizations)
+                      : _filteredCocktails.isEmpty
+                          ? Center(
+                              child: _searchQuery.isNotEmpty || _selectedCategory != null
+                                  ? Text(localizations.noMatchingResults)
+                                  : Text(localizations.noResults),
+                            )
+                          : GridView.builder(
+                              controller: _scrollController,
+                              padding: const EdgeInsets.all(8.0),
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: cardCrossAxisCount,
+                                childAspectRatio: isLargeScreen ? 1.2 : 1.0,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
+                              ),
+                              itemCount: _filteredCocktails.length + 
+                                (_hasMore && _searchQuery.isEmpty && _selectedCategory == null ? 1 : 0),
+                              itemBuilder: (context, index) {
+                                if (index == _filteredCocktails.length) {
+                                  return const Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  );
+                                }
+                                
+                                return CocktailCard(
+                                  cocktail: _filteredCocktails[index],
+                                  isCompact: isLargeScreen,
+                                );
+                              },
+                            ),
             ),
           ),
         ],

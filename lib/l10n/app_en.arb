@@ -1,0 +1,10 @@
+{
+  "errorLoadingData": "Error loading data. Please try again.",
+  "tryAgain": "Try Again"
+}
+
+// filepath: c:\Users\07553093165\Documents\GitHub\coquetel\lib\l10n\app_pt.arb 
+{
+  "errorLoadingData": "Erro ao carregar os dados. Por favor, tente novamente.",
+  "tryAgain": "Tentar Novamente"
+}
