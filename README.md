@@ -26,7 +26,7 @@ A maneira mais simples de executar o projeto durante o desenvolvimento:
 
 1. **Clone o repositório:**
    ```
-   git clone https://github.com/seunome/coquetel.git
+   git clone https://github.com/Mateussouza011/coquetel.git
    cd coquetel
    ```
 
