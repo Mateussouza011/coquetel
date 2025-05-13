@@ -31,7 +31,7 @@ class CocktailDetailScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Imagem com altura controlada
-          Container(
+          SizedBox(
             height: 200, // Altura fixa para a imagem
             width: double.infinity,
             child: Image.network(
@@ -151,7 +151,7 @@ class CocktailDetailScreen extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(12.0),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceVariant,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(8.0),
           ),
           child: Text(
@@ -176,7 +176,7 @@ class CocktailDetailScreen extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
         borderRadius: BorderRadius.circular(8.0),
         border: Border.all(
           color: Theme.of(context).colorScheme.primary.withOpacity(0.2),

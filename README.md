@@ -62,38 +62,6 @@ Use o Docker para criar uma versão em contêiner da aplicação web:
 
 ## Opção 3: Compilar para Produção
 
-### Implantação Web
-
-1. **Construa a versão web:**
-   ```
-   flutter build web --release
-   ```
-
-2. **Teste localmente antes da implantação:**
-   ```
-   # Usando Python
-   cd build/web
-   python -m http.server 8000
-   ```
-   Em seguida, visite http://localhost:8000
-
-3. **Implante a compilação:**
-   Os arquivos compilados estarão no diretório `build/web`. As opções incluem:
-
-   - **Firebase Hosting:**
-     ```
-     firebase deploy --only hosting
-     ```
-   
-   - **GitHub Pages:**
-     ```
-     cp -r build/web/* docs/
-     ```
-     Em seguida, ative o GitHub Pages nas configurações do repositório
-   
-   - **Netlify/Vercel:**
-     Carregue o conteúdo do diretório `build/web`
-
 ### Implantação para Android
 
 1. **Construa o APK de depuração:**
@@ -118,24 +86,6 @@ Use o Docker para criar uma versão em contêiner da aplicação web:
    flutter install
    ```
 
-### Implantação para iOS
-
-1. **Prepare o aplicativo iOS:**
-   ```
-   cd ios
-   pod install
-   cd ..
-   ```
-
-2. **Construa para iOS:**
-   ```
-   flutter build ios --release
-   ```
-   
-3. **Crie um IPA com Xcode:**
-   - Abra `ios/Runner.xcworkspace` no Xcode
-   - Selecione Produto > Arquivo
-   - No organizador de arquivos, clique em "Distribuir Aplicativo"
 
 ## Opção 4: Executar com Servidor Web Flutter
 

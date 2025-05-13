@@ -32,7 +32,7 @@ class CocktailDetailScreen extends StatelessWidget {
                     if (loadingProgress == null) return child;
                     return Container(
                       color: Colors.grey[200],
-                      child: Center(child: CircularProgressIndicator()),
+                      child: const Center(child: CircularProgressIndicator()),
                     );
                   },
                   errorBuilder: (context, error, stackTrace) {
@@ -83,7 +83,7 @@ class CocktailDetailScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceVariant,
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
