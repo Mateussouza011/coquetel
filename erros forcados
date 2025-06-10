@@ -1,0 +1,38 @@
+## 1. Forçar Atraso para Testar Loading
+
+Você pode modificar o método `getCocktails()` no `CocktailService` para adicionar um atraso artificial:
+
+```dart
+Future<List<Cocktail>> getCocktails({int page = 1}) async {
+  // Adicione um delay artificial para ver o estado de loading
+  await Future.delayed(const Duration(seconds: 3));
+  
+  // Restante do código...
+  String letter = String.fromCharCode('a'.codeUnitAt(0) + (page - 1) % 26);
+  
+  final response = await http.get(
+    Uri.parse('$baseUrl/search.php?f=$letter')
+  );
+
+  if (response.statusCode == 200) {
+    // ... código existente
+  }
+}
+```
+
+## 2. Forçar um Erro para Testar a Tela de Erro
+
+### Opção 1: Lançar uma exceção explicitamente
+
+```dart
+Future<List<Cocktail>> getCocktails({int page = 1}) async {
+  // Forçar um erro para testar a UI de erro
+  if (true) { // sempre vai entrar nesta condição
+    throw Exception('Erro forçado para teste');
+  }
+  
+  // O código abaixo nunca será executado devido ao throw acima
+  String letter = String.fromCharCode('a'.codeUnitAt(0) + (page - 1) % 26);
+  // ...resto do código
+}
+```
