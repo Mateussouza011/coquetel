@@ -290,67 +290,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // Adicione um método personalizado para o CocktailCard para lidar com os itens de demo
   void _handleDemoItemTap(String id) {
     if (id == 'demo-loading') {
-      // Mostrar tela de carregamento diretamente sobre a tela atual
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          // Simulação de carregamento após um tempo
-          Future.delayed(const Duration(seconds: 3), () {
-            if (Navigator.canPop(context)) {
-              Navigator.of(context).pop();
-            }
-          });
-          
-          // Diálogo de carregamento
-          return AlertDialog(
-            backgroundColor: Colors.white,
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircularProgressIndicator(),
-                const SizedBox(height: 20),
-                Text(
-                  "Carregando informações...",
-                  style: Theme.of(context).textTheme.titleMedium,
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          );
-        },
-      );
+      // Navegar para a tela de loading dedicada
+      Navigator.of(context).pushNamed(AppRoutes.loading);
     } else if (id == 'demo-error') {
-      // Mostrar diálogo de erro com confirmação
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          final localizations = AppLocalizations.of(context);
-          
-          return AlertDialog(
-            title: Text(localizations.error ?? "Erro"),
-            content: Text(
-              localizations.genericErrorMessage ?? 
-              "Ocorreu um erro ao carregar os detalhes deste coquetel.",
-            ),
-            actions: [
-              TextButton(
-                child: Text(localizations.backToHome ?? "Voltar ao Início"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  // Não navegamos para a página de detalhes aqui
-                },
-              ),
-            ],
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            backgroundColor: Colors.white,
-            contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
-            titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-          );
-        },
-      );
+      // Navegar para a tela de erro dedicada
+      Navigator.of(context).pushNamed(AppRoutes.error);
     }
   }
   
@@ -365,7 +309,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         id: 'demo-loading',
         name: '.Item de Loading',
         category: 'Demo',
-        instructions: 'Clique neste item para demonstrar uma tela de carregamento temporária.',
+        instructions: 'Clique neste item para navegar para uma tela dedicada de carregamento.',
         imageUrl: 'https://via.placeholder.com/400x300/2196F3/FFFFFF?text=Loading+Demo',
         ingredients: [CocktailIngredient(name: 'Demo', measure: 'N/A')],
       );
@@ -374,7 +318,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         id: 'demo-error',
         name: '.Item de Error',
         category: 'Demo',
-        instructions: 'Clique neste item para demonstrar uma mensagem de erro com opção para voltar à página principal.',
+        instructions: 'Clique neste item para navegar para uma tela dedicada de erro.',
         imageUrl: 'https://via.placeholder.com/400x300/F44336/FFFFFF?text=Error+Demo',
         ingredients: [CocktailIngredient(name: 'Demo', measure: 'N/A')],
       );

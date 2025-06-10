@@ -9,7 +9,10 @@
   "genericErrorMessage": "Something went wrong. Please try again later.",
   "backToHome": "Back to Home",
   "loadingDemo": "Loading Demo",
-  "errorDemo": "Error Demo"
+  "errorDemo": "Error Demo",
+  "loading": "Loading",
+  "loadingMessage": "Loading content...",
+  "pleaseWait": "Please wait..."
 }
 
 // filepath: c:\Users\07553093165\Documents\GitHub\coquetel\lib\l10n\app_pt.arb
@@ -24,5 +27,8 @@
   "genericErrorMessage": "Algo deu errado. Por favor, tente novamente mais tarde.",
   "backToHome": "Voltar ao Início",
   "loadingDemo": "Demo de Carregamento",
-  "errorDemo": "Demo de Erro"
+  "errorDemo": "Demo de Erro",
+  "loading": "Carregando",
+  "loadingMessage": "Carregando conteúdo...",
+  "pleaseWait": "Por favor, aguarde..."
 }

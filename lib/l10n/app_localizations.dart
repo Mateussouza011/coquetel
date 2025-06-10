@@ -38,6 +38,8 @@ class AppLocalizations {
       'loadingDemo': 'Carregando Demonstração',
       'errorDemo': 'Erro na Demonstração',
       'home': 'Início',
+      'loading': 'Carregando',
+      'pleaseWait': 'Por favor, aguarde...',
     },
     'en': {
       'appTitle': 'Cocktail Timeline',
@@ -62,6 +64,8 @@ class AppLocalizations {
       'loadingDemo': 'Loading Demo',
       'errorDemo': 'Error Demo',
       'home': 'Home',
+      'loading': 'Loading',
+      'pleaseWait': 'Please wait...',
     },
     'es': {
       'appTitle': 'Línea de Tiempo de Cócteles',
@@ -86,6 +90,8 @@ class AppLocalizations {
       'loadingDemo': 'Cargando Demostración',
       'errorDemo': 'Error en la Demostración',
       'home': 'Inicio',
+      'loading': 'Cargando',
+      'pleaseWait': 'Por favor, espere...',
     },
     'fr': {
       'appTitle': 'Chronologie des Cocktails',
@@ -110,6 +116,8 @@ class AppLocalizations {
       'loadingDemo': 'Chargement de la démo',
       'errorDemo': 'Erreur de démo',
       'home': 'Accueil',
+      'loading': 'Chargement',
+      'pleaseWait': 'Veuillez patienter...',
     },
   };
   
@@ -181,6 +189,8 @@ class AppLocalizations {
   String get loadingDemo => _getLocalizedValue('loadingDemo') ?? 'Loading Demo';
   String get errorDemo => _getLocalizedValue('errorDemo') ?? 'Error Demo';
   String get home => _getLocalizedValue('home') ?? 'Home';
+  String get loading => _getLocalizedValue('loading') ?? 'Loading';
+  String get pleaseWait => _getLocalizedValue('pleaseWait') ?? 'Please wait...';
   
   // Método auxiliar para buscar valor no dicionário
   String _getLocalizedValue(String key) {

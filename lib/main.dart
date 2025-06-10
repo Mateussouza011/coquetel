@@ -6,6 +6,7 @@ import 'screens/cocktail_detail_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/error_screen.dart';
 import 'screens/favorites_screen.dart';
+import 'screens/loading_screen.dart'; // Importar a nova tela
 import 'l10n/app_localizations.dart';
 import 'services/language_service.dart';
 import 'routes/app_routes.dart';
@@ -93,6 +94,7 @@ class _MyAppState extends State<MyApp> {
           AppRoutes.timeline: (context) => const TimelineScreen(),
           AppRoutes.favorites: (context) => const FavoritesScreen(),
           AppRoutes.error: (context) => const ErrorScreen(),
+          AppRoutes.loading: (context) => const LoadingScreen(), // Nova rota
         },
         onGenerateRoute: (settings) {
           if (settings.name == AppRoutes.cocktailDetail) {
