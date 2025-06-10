@@ -27,4 +27,30 @@ class CocktailService {
       throw Exception('Failed to load cocktails');
     }
   }
+
+  Future<List<Cocktail>> searchCocktails(String query) async {
+    if (query.isEmpty) return [];
+    
+    try {
+      // Endpoint de busca por nome na API TheCocktailDB
+      // Use baseUrl da própria classe, não de ApiConfig
+      final response = await http.get(Uri.parse('$baseUrl/search.php?s=$query'));
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        
+        if (data['drinks'] == null) {
+          return [];
+        }
+        
+        final List<dynamic> drinksJson = data['drinks'];
+        
+        return drinksJson.map((json) => Cocktail.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to search cocktails - Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error searching cocktails: $e');
+    }
+  }
 }

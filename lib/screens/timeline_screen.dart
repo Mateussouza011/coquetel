@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../models/cocktail.dart';
 import '../widgets/cocktail_card.dart';
 import '../services/cocktail_service.dart';
 import '../l10n/app_localizations.dart';
 import '../services/language_service.dart';
+import '../widgets/app_bottom_nav.dart';
+import '../routes/app_routes.dart';
+import '../models/mock_cocktails.dart'; // Criaremos isso para mock de coquetéis
 
 class TimelineScreen extends StatefulWidget {
   const TimelineScreen({Key? key}) : super(key: key);
@@ -30,6 +34,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
   bool _hasError = false;
   String _errorMessage = '';
   
+  // Adicione ou atualize estas variáveis na classe _TimelineScreenState
+  bool _isSearching = false;
+  List<Cocktail> _searchResults = [];
+  Timer? _searchDebounce;
+  
   @override
   void initState() {
     super.initState();
@@ -54,13 +63,87 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   void _onSearchChanged() {
-    setState(() {
-      _searchQuery = _searchController.text;
-      _applyFilters();
+    if (_searchDebounce?.isActive ?? false) _searchDebounce!.cancel();
+    
+    _searchDebounce = Timer(const Duration(milliseconds: 500), () {
+      final query = _searchController.text;
+      setState(() {
+        _searchQuery = query;
+      });
+      
+      if (query.length >= 2) {
+        setState(() {
+          _isSearching = true;
+        });
+        
+        _searchCocktails(query);
+      } else {
+        setState(() {
+          _isSearching = false;
+          _searchResults = [];
+          _applyFilters(); // Volta para a filtragem local
+        });
+      }
     });
   }
 
+  // Modificando o método _searchCocktails para garantir que os resultados sejam exibidos
+  Future<void> _searchCocktails(String query) async {
+    try {
+      final results = await _cocktailService.searchCocktails(query);
+      
+      if (mounted) {
+        setState(() {
+          _searchQuery = query;
+          _searchResults = results;
+          _isSearching = false;
+          // Aplica os resultados diretamente à lista filtrada
+          _filteredCocktails = results;
+          
+          // Aplica o filtro de categoria se houver um selecionado
+          if (_selectedCategory != null) {
+            _filteredCocktails = _filteredCocktails
+                .where((cocktail) => cocktail.category == _selectedCategory)
+                .toList();
+          }
+          
+          // Ordena alfabeticamente
+          _filteredCocktails.sort((a, b) => a.name.compareTo(b.name));
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isSearching = false;
+          _hasError = true;
+          _errorMessage = 'Error searching cocktails: $e';
+        });
+      }
+    }
+  }
+
   void _applyFilters() {
+    // Se estamos usando resultados de busca, ignore a filtragem local
+    if (_searchResults.isNotEmpty) {
+      List<Cocktail> result = List.from(_searchResults);
+      
+      // Aplicar filtro de categoria, se um estiver selecionado
+      if (_selectedCategory != null) {
+        result = result.where((cocktail) => 
+            cocktail.category == _selectedCategory
+        ).toList();
+      }
+      
+      // Ordenar alfabeticamente
+      result.sort((a, b) => a.name.compareTo(b.name));
+      
+      setState(() {
+        _filteredCocktails = result;
+      });
+      return;
+    }
+    
+    // Caso contrário, continue com a filtragem local existente
     List<Cocktail> result = List.from(_cocktails);
     
     // Aplicar filtro de busca por nome, se houver
@@ -97,7 +180,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       final cocktails = await _cocktailService.getCocktails(page: _currentPage);
       
       // Extrair categorias únicas
-      Set<String> uniqueCategories = {};
+      Set<String> uniqueCategories = {'Demo'}; // Adicione a categoria Demo
       for (var cocktail in cocktails) {
         if (cocktail.category.isNotEmpty) {
           uniqueCategories.add(cocktail.category);
@@ -107,6 +190,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       setState(() {
         _cocktails = cocktails;
         _categories = uniqueCategories.toList()..sort();
+        _setupDemoItems(); // Adicionar itens de demonstração
         _applyFilters();
         _isLoading = false;
         _hasMore = cocktails.isNotEmpty;
@@ -163,6 +247,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       _searchQuery = '';
       _selectedCategory = null;
       _hasError = false;
+      _searchResults = [];
     });
     return _loadCocktails();
   }
@@ -200,6 +285,83 @@ class _TimelineScreenState extends State<TimelineScreen> {
         ],
       ),
     );
+  }
+  
+  // Adicione um método personalizado para o CocktailCard para lidar com os itens de demo
+  void _handleDemoItemTap(String id) {
+  if (id == 'demo-loading') {
+    Navigator.of(context).pushNamed(AppRoutes.loading);
+  } else if (id == 'demo-error') {
+    Navigator.of(context).pushNamed(AppRoutes.error);
+  }
+}
+  
+  // Modificar o método _setupDemoItems para usar também o segundo item da API como base
+  void _setupDemoItems() {
+    // Verificar se os itens de demonstração já estão presentes
+    bool hasLoadingItem = _cocktails.any((c) => c.id == 'demo-loading');
+    bool hasErrorItem = _cocktails.any((c) => c.id == 'demo-error');
+    
+    if (!hasLoadingItem || !hasErrorItem) {
+      // Criar itens de demonstração baseados em coquetéis reais (se disponíveis)
+      Cocktail loadingDemoItem;
+      Cocktail errorDemoItem;
+      
+      // Para o item de carregamento, usar o segundo coquetel real (se disponível)
+      if (_cocktails.length > 1 && _cocktails[1].id != 'demo-error' && _cocktails[1].id != 'demo-loading') {
+        // Usar o segundo cocktail real como base
+        final baseCocktail = _cocktails[1];
+        loadingDemoItem = Cocktail(
+          id: 'demo-loading',
+          name: '.Item de Loading - ${baseCocktail.name}', // Indica que é uma cópia
+          category: 'Demo',
+          instructions: 'Este é um item de loading baseado em "${baseCocktail.name}". Ao clicar, uma tela de carregamento será exibida antes de mostrar os detalhes do coquetel.',
+          imageUrl: baseCocktail.imageUrl, // Usa a mesma imagem do original
+          ingredients: baseCocktail.ingredients, // Usa os mesmos ingredientes
+        );
+      } else {
+        // Fallback caso não haja segundo cocktail real ainda
+        loadingDemoItem = Cocktail(
+          id: 'demo-loading',
+          name: '.Item de Loading',
+          category: 'Demo',
+          instructions: 'Clique neste item para navegar para uma tela dedicada de carregamento.',
+          imageUrl: 'https://via.placeholder.com/400x300/2196F3/FFFFFF?text=Loading+Demo',
+          ingredients: [CocktailIngredient(name: 'Demo', measure: 'N/A')],
+        );
+      }
+      
+      // Para o item de erro, continuar usando o primeiro coquetel real
+      if (_cocktails.isNotEmpty && _cocktails[0].id != 'demo-loading' && _cocktails[0].id != 'demo-error') {
+        // Usar o primeiro cocktail real como base
+        final baseCocktail = _cocktails[0];
+        errorDemoItem = Cocktail(
+          id: 'demo-error',
+          name: '.Item de Error - ${baseCocktail.name}', // Indica que é uma cópia
+          category: 'Demo',
+          instructions: 'Este é um item de erro baseado em "${baseCocktail.name}". Ao clicar, uma tela de erro será exibida em vez dos detalhes do coquetel.',
+          imageUrl: baseCocktail.imageUrl, // Usa a mesma imagem do original
+          ingredients: baseCocktail.ingredients, // Usa os mesmos ingredientes
+        );
+      } else {
+        // Fallback caso não haja nenhum cocktail real ainda
+        errorDemoItem = Cocktail(
+          id: 'demo-error',
+          name: '.Item de Error',
+          category: 'Demo',
+          instructions: 'Clique neste item para navegar para uma tela dedicada de erro.',
+          imageUrl: 'https://via.placeholder.com/400x300/F44336/FFFFFF?text=Error+Demo',
+          ingredients: [CocktailIngredient(name: 'Demo', measure: 'N/A')],
+        );
+      }
+      
+      // Adicionar no início da lista
+      setState(() {
+        _cocktails.insert(0, errorDemoItem);
+        _cocktails.insert(0, loadingDemoItem);
+        _applyFilters();
+      });
+    }
   }
   
   @override
@@ -251,17 +413,32 @@ class _TimelineScreenState extends State<TimelineScreen> {
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  hintText: localizations.searchHint,
+                  hintText: localizations.searchHint ?? "Search cocktails...",
                   prefixIcon: const Icon(Icons.search),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  suffixIcon: _searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () {
-                            _searchController.clear();
-                          },
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (_isSearching)
+                              const Padding(
+                                padding: EdgeInsets.only(right: 8.0),
+                                child: SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              ),
+                            IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                _searchController.clear();
+                                _refreshTimeline();
+                              },
+                            ),
+                          ],
                         )
                       : null,
                 ),
@@ -365,49 +542,73 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         children: [
                           const CircularProgressIndicator(),
                           const SizedBox(height: 16),
-                          Text(localizations.loadingMessage),
+                          Text(localizations.loadingMessage ?? "Loading..."),
                         ],
                       ),
                     )
-                  : _hasError
-                      ? _buildErrorWidget(context, localizations)
-                      : _filteredCocktails.isEmpty
-                          ? Center(
-                              child: _searchQuery.isNotEmpty || _selectedCategory != null
-                                  ? Text(localizations.noMatchingResults)
-                                  : Text(localizations.noResults),
-                            )
-                          : GridView.builder(
-                              controller: _scrollController,
-                              padding: const EdgeInsets.all(8.0),
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: cardCrossAxisCount,
-                                childAspectRatio: isLargeScreen ? 1.2 : 1.0,
-                                crossAxisSpacing: 12,
-                                mainAxisSpacing: 12,
-                              ),
-                              itemCount: _filteredCocktails.length + 
-                                (_hasMore && _searchQuery.isEmpty && _selectedCategory == null ? 1 : 0),
-                              itemBuilder: (context, index) {
-                                if (index == _filteredCocktails.length) {
-                                  return const Center(
-                                    child: Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                  );
-                                }
-                                
-                                return CocktailCard(
-                                  cocktail: _filteredCocktails[index],
-                                  isCompact: isLargeScreen,
-                                );
-                              },
-                            ),
+                  : _isSearching
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const CircularProgressIndicator(),
+                              const SizedBox(height: 16),
+                              Text("Searching for '${_searchController.text}'..."),
+                            ],
+                          ),
+                        )
+                      : _hasError
+                          ? _buildErrorWidget(context, localizations)
+                          : _filteredCocktails.isEmpty
+                              ? Center(
+                                  child: _searchQuery.isNotEmpty || _selectedCategory != null
+                                      ? Text(localizations.noMatchingResults ?? "No matching results")
+                                      : Text(localizations.noResults ?? "No results"),
+                                )
+                              : GridView.builder(
+                                  controller: _scrollController,
+                                  padding: const EdgeInsets.all(8.0),
+                                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: cardCrossAxisCount,
+                                    childAspectRatio: isLargeScreen ? 1.2 : 1.0,
+                                    crossAxisSpacing: 12,
+                                    mainAxisSpacing: 12,
+                                  ),
+                                  itemCount: _filteredCocktails.length + 
+                                    (_hasMore && _searchQuery.isEmpty && _selectedCategory == null ? 1 : 0),
+                                  itemBuilder: (context, index) {
+                                    if (index == _filteredCocktails.length) {
+                                      return const Center(
+                                        child: Padding(
+                                          padding: EdgeInsets.all(8.0),
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                      );
+                                    }
+                                    
+                                    final cocktail = _filteredCocktails[index];
+                                    final isDemoItem = cocktail.id == 'demo-loading' || cocktail.id == 'demo-error';
+                                    
+                                    return cocktail.id.startsWith('demo-')
+                                        ? GestureDetector(
+                                            onTap: () => _handleDemoItemTap(cocktail.id),
+                                            child: CocktailCard(
+                                              cocktail: cocktail,
+                                              isCompact: isLargeScreen,
+                                              isDemoItem: true,
+                                            ),
+                                          )
+                                        : CocktailCard(
+                                            cocktail: cocktail,
+                                            isCompact: isLargeScreen,
+                                          );
+                                  },
+                                ),
             ),
           ),
         ],
       ),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 0),
     );
   }
 }

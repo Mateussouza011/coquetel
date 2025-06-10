@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/cocktail.dart';
 import '../l10n/app_localizations.dart';
+import '../providers/favorites_provider.dart';
 
 class CocktailDetailScreen extends StatelessWidget {
   final Cocktail cocktail;
@@ -12,10 +14,23 @@ class CocktailDetailScreen extends StatelessWidget {
     final localizations = AppLocalizations.of(context);
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth > 900;
+    final favoritesProvider = Provider.of<FavoritesProvider>(context);
+    final isFavorite = favoritesProvider.isFavorite(cocktail.id);
     
     return Scaffold(
       appBar: AppBar(
         title: Text(cocktail.name),
+        actions: [
+          IconButton(
+            icon: Icon(
+              isFavorite ? Icons.favorite : Icons.favorite_border,
+              color: isFavorite ? Colors.red : Colors.white,
+            ),
+            onPressed: () {
+              favoritesProvider.toggleFavorite(cocktail);
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: isDesktop 
