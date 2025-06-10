@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import '../routes/app_routes.dart';
 import '../l10n/app_localizations.dart';
+import '../services/cocktail_service.dart';
+import '../models/cocktail.dart';
 
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({Key? key}) : super(key: key);
@@ -15,12 +17,46 @@ class _LoadingScreenState extends State<LoadingScreen> {
   void initState() {
     super.initState();
     
-    // Simula um processo de carregamento e retorna automaticamente
+    // Simula um processo de carregamento e retorna para a tela de detalhes
     Timer(const Duration(seconds: 3), () {
+      if (mounted) {
+        // Obter o segundo coquetel da lista para navegar para seus detalhes
+        _navigateToSecondCocktail();
+      }
+    });
+  }
+  
+  Future<void> _navigateToSecondCocktail() async {
+    try {
+      // Instancia o serviço de coquetéis
+      final cocktailService = CocktailService();
+      
+      // Carrega a primeira página de coquetéis para obter o segundo item
+      final cocktails = await cocktailService.getCocktails(page: 1);
+      
+      if (cocktails.length > 1) {
+        // Usa o segundo coquetel (índice 1)
+        final targetCocktail = cocktails[1];
+        
+        if (mounted) {
+          // Navegar para detalhes deste coquetel
+          Navigator.of(context).pushReplacementNamed(
+            AppRoutes.cocktailDetail,
+            arguments: targetCocktail,
+          );
+        }
+      } else {
+        // Fallback caso não encontre
+        if (mounted) {
+          Navigator.of(context).pushReplacementNamed(AppRoutes.timeline);
+        }
+      }
+    } catch (e) {
+      // Em caso de erro, voltar para a timeline
       if (mounted) {
         Navigator.of(context).pushReplacementNamed(AppRoutes.timeline);
       }
-    });
+    }
   }
 
   @override
@@ -41,7 +77,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
             ),
             const SizedBox(height: 40),
             Text(
-              localizations.loadingMessage,
+              localizations.loadingMessage ?? "Carregando conteúdo...",
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 20),

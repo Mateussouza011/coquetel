@@ -289,39 +289,71 @@ class _TimelineScreenState extends State<TimelineScreen> {
   
   // Adicione um método personalizado para o CocktailCard para lidar com os itens de demo
   void _handleDemoItemTap(String id) {
-    if (id == 'demo-loading') {
-      // Navegar para a tela de loading dedicada
-      Navigator.of(context).pushNamed(AppRoutes.loading);
-    } else if (id == 'demo-error') {
-      // Navegar para a tela de erro dedicada
-      Navigator.of(context).pushNamed(AppRoutes.error);
-    }
+  if (id == 'demo-loading') {
+    Navigator.of(context).pushNamed(AppRoutes.loading);
+  } else if (id == 'demo-error') {
+    Navigator.of(context).pushNamed(AppRoutes.error);
   }
+}
   
+  // Modificar o método _setupDemoItems para usar também o segundo item da API como base
   void _setupDemoItems() {
     // Verificar se os itens de demonstração já estão presentes
     bool hasLoadingItem = _cocktails.any((c) => c.id == 'demo-loading');
     bool hasErrorItem = _cocktails.any((c) => c.id == 'demo-error');
     
     if (!hasLoadingItem || !hasErrorItem) {
-      // Criar os itens de demonstração
-      final loadingDemoItem = Cocktail(
-        id: 'demo-loading',
-        name: '.Item de Loading',
-        category: 'Demo',
-        instructions: 'Clique neste item para navegar para uma tela dedicada de carregamento.',
-        imageUrl: 'https://via.placeholder.com/400x300/2196F3/FFFFFF?text=Loading+Demo',
-        ingredients: [CocktailIngredient(name: 'Demo', measure: 'N/A')],
-      );
+      // Criar itens de demonstração baseados em coquetéis reais (se disponíveis)
+      Cocktail loadingDemoItem;
+      Cocktail errorDemoItem;
       
-      final errorDemoItem = Cocktail(
-        id: 'demo-error',
-        name: '.Item de Error',
-        category: 'Demo',
-        instructions: 'Clique neste item para navegar para uma tela dedicada de erro.',
-        imageUrl: 'https://via.placeholder.com/400x300/F44336/FFFFFF?text=Error+Demo',
-        ingredients: [CocktailIngredient(name: 'Demo', measure: 'N/A')],
-      );
+      // Para o item de carregamento, usar o segundo coquetel real (se disponível)
+      if (_cocktails.length > 1 && _cocktails[1].id != 'demo-error' && _cocktails[1].id != 'demo-loading') {
+        // Usar o segundo cocktail real como base
+        final baseCocktail = _cocktails[1];
+        loadingDemoItem = Cocktail(
+          id: 'demo-loading',
+          name: '.Item de Loading - ${baseCocktail.name}', // Indica que é uma cópia
+          category: 'Demo',
+          instructions: 'Este é um item de loading baseado em "${baseCocktail.name}". Ao clicar, uma tela de carregamento será exibida antes de mostrar os detalhes do coquetel.',
+          imageUrl: baseCocktail.imageUrl, // Usa a mesma imagem do original
+          ingredients: baseCocktail.ingredients, // Usa os mesmos ingredientes
+        );
+      } else {
+        // Fallback caso não haja segundo cocktail real ainda
+        loadingDemoItem = Cocktail(
+          id: 'demo-loading',
+          name: '.Item de Loading',
+          category: 'Demo',
+          instructions: 'Clique neste item para navegar para uma tela dedicada de carregamento.',
+          imageUrl: 'https://via.placeholder.com/400x300/2196F3/FFFFFF?text=Loading+Demo',
+          ingredients: [CocktailIngredient(name: 'Demo', measure: 'N/A')],
+        );
+      }
+      
+      // Para o item de erro, continuar usando o primeiro coquetel real
+      if (_cocktails.isNotEmpty && _cocktails[0].id != 'demo-loading' && _cocktails[0].id != 'demo-error') {
+        // Usar o primeiro cocktail real como base
+        final baseCocktail = _cocktails[0];
+        errorDemoItem = Cocktail(
+          id: 'demo-error',
+          name: '.Item de Error - ${baseCocktail.name}', // Indica que é uma cópia
+          category: 'Demo',
+          instructions: 'Este é um item de erro baseado em "${baseCocktail.name}". Ao clicar, uma tela de erro será exibida em vez dos detalhes do coquetel.',
+          imageUrl: baseCocktail.imageUrl, // Usa a mesma imagem do original
+          ingredients: baseCocktail.ingredients, // Usa os mesmos ingredientes
+        );
+      } else {
+        // Fallback caso não haja nenhum cocktail real ainda
+        errorDemoItem = Cocktail(
+          id: 'demo-error',
+          name: '.Item de Error',
+          category: 'Demo',
+          instructions: 'Clique neste item para navegar para uma tela dedicada de erro.',
+          imageUrl: 'https://via.placeholder.com/400x300/F44336/FFFFFF?text=Error+Demo',
+          ingredients: [CocktailIngredient(name: 'Demo', measure: 'N/A')],
+        );
+      }
       
       // Adicionar no início da lista
       setState(() {
