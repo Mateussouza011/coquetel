@@ -16,11 +16,14 @@ class _LoadingScreenState extends State<LoadingScreen> {
   @override
   void initState() {
     super.initState();
-    
-    // Simula um processo de carregamento e retorna para a tela de detalhes
-    Timer(const Duration(seconds: 3), () {
+    // Inicia o processo de carregamento após a construção da tela
+    Timer(const Duration(milliseconds: 100), _startLoading);
+  }
+  
+  void _startLoading() {
+    // Simula o processo de carregamento por 3 segundos
+    Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
-        // Obter o segundo coquetel da lista para navegar para seus detalhes
         _navigateToSecondCocktail();
       }
     });
@@ -28,30 +31,21 @@ class _LoadingScreenState extends State<LoadingScreen> {
   
   Future<void> _navigateToSecondCocktail() async {
     try {
-      // Instancia o serviço de coquetéis
-      final cocktailService = CocktailService();
+      final cocktails = await CocktailService().getCocktails(page: 1);
       
-      // Carrega a primeira página de coquetéis para obter o segundo item
-      final cocktails = await cocktailService.getCocktails(page: 1);
+      if (!mounted) return;
       
       if (cocktails.length > 1) {
-        // Usa o segundo coquetel (índice 1)
-        final targetCocktail = cocktails[1];
-        
-        if (mounted) {
-          // Navegar para detalhes deste coquetel
-          Navigator.of(context).pushReplacementNamed(
-            AppRoutes.cocktailDetail,
-            arguments: targetCocktail,
-          );
-        }
+        // Navega para os detalhes do segundo coquetel
+        Navigator.of(context).pushReplacementNamed(
+          AppRoutes.cocktailDetail,
+          arguments: cocktails[1],
+        );
       } else {
-        // Fallback caso não encontre
-        if (mounted) {
-          Navigator.of(context).pushReplacementNamed(AppRoutes.timeline);
-        }
+        // Fallback para a timeline se não houver coquetéis suficientes
+        Navigator.of(context).pushReplacementNamed(AppRoutes.timeline);
       }
-    } catch (e) {
+    } catch (_) {
       // Em caso de erro, voltar para a timeline
       if (mounted) {
         Navigator.of(context).pushReplacementNamed(AppRoutes.timeline);
@@ -62,39 +56,45 @@ class _LoadingScreenState extends State<LoadingScreen> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
+    final theme = Theme.of(context);
     
     return Scaffold(
       appBar: AppBar(
-        title: Text(localizations.loadingDemo), // Use loadingDemo em vez de loading
+        title: Text(localizations.loadingDemo),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-              strokeWidth: 5,
-            ),
-            const SizedBox(height: 40),
-            Text(
-              localizations.loadingMessage ?? "Carregando conteúdo...",
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 20),
-            Text(
-              "Por favor, aguarde...", // String fixa como solução temporária
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Colors.grey[600],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                strokeWidth: 5,
               ),
-            ),
-            const SizedBox(height: 50),
-            LinearProgressIndicator(
-              backgroundColor: Colors.grey[300],
-              valueColor: AlwaysStoppedAnimation<Color>(
-                Theme.of(context).colorScheme.primary,
+              const SizedBox(height: 40),
+              Text(
+                localizations.loadingMessage ?? "Carregando conteúdo...",
+                style: theme.textTheme.titleLarge,
+                textAlign: TextAlign.center,
               ),
-            ),
-          ],
+              const SizedBox(height: 20),
+              Text(
+                "Por favor, aguarde...",
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: Colors.grey[600],
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 50),
+              LinearProgressIndicator(
+                backgroundColor: Colors.grey[300],
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  theme.colorScheme.primary,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
