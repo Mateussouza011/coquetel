@@ -28,7 +28,16 @@ class AppLocalizations {
       'categoryFilter': 'Categoria:',
       'allCategories': 'Todas',
       'loadingCategories': 'Carregando categorias...',
-      'noIngredients': 'Não foram encontrados ingredientes para este coquetel.'
+      'noIngredients': 'Não foram encontrados ingredientes para este coquetel.',
+      'favorites': 'Favoritos',
+      'noFavorites': 'Você ainda não adicionou nenhum coquetel aos favoritos',
+      'exploreMore': 'Explore Coquetéis',
+      'error': 'Erro',
+      'genericErrorMessage': 'Algo deu errado. Por favor, tente novamente mais tarde.',
+      'backToHome': 'Voltar para a Página Inicial',
+      'loadingDemo': 'Carregando Demonstração',
+      'errorDemo': 'Erro na Demonstração',
+      'home': 'Início',
     },
     'en': {
       'appTitle': 'Cocktail Timeline',
@@ -43,7 +52,16 @@ class AppLocalizations {
       'categoryFilter': 'Category:',
       'allCategories': 'All',
       'loadingCategories': 'Loading categories...',
-      'noIngredients': 'No ingredients found for this cocktail.'
+      'noIngredients': 'No ingredients found for this cocktail.',
+      'favorites': 'Favorites',
+      'noFavorites': 'You haven\'t added any favorite cocktails yet',
+      'exploreMore': 'Explore Cocktails',
+      'error': 'Error',
+      'genericErrorMessage': 'Something went wrong. Please try again later.',
+      'backToHome': 'Back to Home',
+      'loadingDemo': 'Loading Demo',
+      'errorDemo': 'Error Demo',
+      'home': 'Home',
     },
     'es': {
       'appTitle': 'Línea de Tiempo de Cócteles',
@@ -58,7 +76,16 @@ class AppLocalizations {
       'categoryFilter': 'Categoría:',
       'allCategories': 'Todas',
       'loadingCategories': 'Cargando categorías...',
-      'noIngredients': 'No se encontraron ingredientes para este cóctel.'
+      'noIngredients': 'No se encontraron ingredientes para este cóctel.',
+      'favorites': 'Favoritos',
+      'noFavorites': 'No has agregado ningún cóctel a favoritos todavía',
+      'exploreMore': 'Explorar Cócteles',
+      'error': 'Error',
+      'genericErrorMessage': 'Algo salió mal. Por favor, inténtalo de nuevo más tarde.',
+      'backToHome': 'Volver a Inicio',
+      'loadingDemo': 'Cargando Demostración',
+      'errorDemo': 'Error en la Demostración',
+      'home': 'Inicio',
     },
     'fr': {
       'appTitle': 'Chronologie des Cocktails',
@@ -73,7 +100,16 @@ class AppLocalizations {
       'categoryFilter': 'Catégorie:',
       'allCategories': 'Toutes',
       'loadingCategories': 'Chargement des catégories...',
-      'noIngredients': 'Aucun ingrédient trouvé pour ce cocktail.'
+      'noIngredients': 'Aucun ingrédient trouvé pour ce cocktail.',
+      'favorites': 'Favoris',
+      'noFavorites': 'Vous n\'avez encore ajouté aucun cocktail aux favoris',
+      'exploreMore': 'Explorer les Cocktails',
+      'error': 'Erreur',
+      'genericErrorMessage': 'Quelque chose a mal tourné. Veuillez réessayer plus tard.',
+      'backToHome': 'Retour à l\'accueil',
+      'loadingDemo': 'Chargement de la démo',
+      'errorDemo': 'Erreur de démo',
+      'home': 'Accueil',
     },
   };
   
@@ -134,6 +170,17 @@ class AppLocalizations {
 
   String get errorLoadingData => 'Erro ao carregar os dados. Por favor, tente novamente.';
   String get tryAgain => 'Tentar Novamente';
+
+  // Adicionar mais strings ao dicionário
+  String get favorites => _getLocalizedValue('favorites') ?? 'Favorites';
+  String get noFavorites => _getLocalizedValue('noFavorites') ?? 'You haven\'t added any favorite cocktails yet';
+  String get exploreMore => _getLocalizedValue('exploreMore') ?? 'Explore Cocktails';
+  String get error => _getLocalizedValue('error') ?? 'Error';
+  String get genericErrorMessage => _getLocalizedValue('genericErrorMessage') ?? 'Something went wrong. Please try again later.';
+  String get backToHome => _getLocalizedValue('backToHome') ?? 'Back to Home';
+  String get loadingDemo => _getLocalizedValue('loadingDemo') ?? 'Loading Demo';
+  String get errorDemo => _getLocalizedValue('errorDemo') ?? 'Error Demo';
+  String get home => _getLocalizedValue('home') ?? 'Home';
   
   // Método auxiliar para buscar valor no dicionário
   String _getLocalizedValue(String key) {
