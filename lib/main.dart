@@ -6,10 +6,10 @@ import 'screens/cocktail_detail_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/error_screen.dart';
 import 'screens/favorites_screen.dart';
-import 'screens/loading_screen.dart'; // Importar a nova tela
+import 'screens/loading_screen.dart'; 
 import 'l10n/app_localizations.dart';
 import 'services/language_service.dart';
-import 'routes/app_routes.dart';
+import 'core/app_core.dart';
 import 'models/cocktail.dart';
 import 'providers/favorites_provider.dart';
 
@@ -69,12 +69,12 @@ class _MyAppState extends State<MyApp> {
             seedColor: const Color(0xFF8C2B47),
             brightness: Brightness.light,
           ),
-          cardTheme: CardTheme(
+          cardTheme: const CardThemeData(
             elevation: 3.0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16.0),
+              borderRadius: BorderRadius.all(Radius.circular(16.0)),
             ),
-            margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+            margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
           ),
           textTheme: const TextTheme(
             titleLarge: TextStyle(fontWeight: FontWeight.bold, letterSpacing: -0.5),
@@ -94,7 +94,7 @@ class _MyAppState extends State<MyApp> {
           AppRoutes.timeline: (context) => const TimelineScreen(),
           AppRoutes.favorites: (context) => const FavoritesScreen(),
           AppRoutes.error: (context) => const ErrorScreen(),
-          AppRoutes.loading: (context) => const LoadingScreen(), // Nova rota
+          AppRoutes.loading: (context) => const LoadingScreen(),
         },
         onGenerateRoute: (settings) {
           if (settings.name == AppRoutes.cocktailDetail) {

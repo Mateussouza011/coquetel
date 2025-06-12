@@ -21,6 +21,11 @@ class FavoritesProvider with ChangeNotifier {
     notifyListeners();
   }
   
+  void addFavorite(Cocktail cocktail) {
+    _favorites[cocktail.id] = cocktail;
+    notifyListeners();
+  }
+  
   void removeFavorite(String id) {
     _favorites.remove(id);
     notifyListeners();

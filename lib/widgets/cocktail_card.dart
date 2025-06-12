@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/cocktail.dart';
-import '../routes/app_routes.dart';
+import '../core/app_core.dart';
 import '../providers/favorites_provider.dart';
 
 class CocktailCard extends StatelessWidget {
@@ -21,7 +21,6 @@ class CocktailCard extends StatelessWidget {
     final favoritesProvider = Provider.of<FavoritesProvider>(context);
     final isFavorite = favoritesProvider.isFavorite(cocktail.id);
     
-    // Se for um item de demo, use um estilo visual diferente
     final demoHighlight = isDemoItem
         ? BoxDecoration(
             border: Border.all(
@@ -35,122 +34,180 @@ class CocktailCard extends StatelessWidget {
     return Container(
       decoration: demoHighlight,
       child: Card(
+        margin: const EdgeInsets.all(8.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        elevation: 4,
         clipBehavior: Clip.antiAlias,
-        elevation: isCompact ? 2.0 : 3.0,
-        margin: isCompact 
-            ? const EdgeInsets.all(4.0)
-            : const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
         child: InkWell(
           onTap: isDemoItem 
-              ? null // Gerenciado pelo _handleDemoItemTap no TimelineScreen
+              ? null
               : () {
-                  // Use rota nomeada com passagem de parâmetro
                   Navigator.of(context).pushNamed(
                     AppRoutes.cocktailDetail,
                     arguments: cocktail,
                   );
                 },
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Image with proper aspect ratio - wider for compact mode
-              AspectRatio(
-                aspectRatio: isCompact ? 1.7 : 16 / 9,
-                child: Image.network(
-                  cocktail.imageUrl,
-                  fit: BoxFit.cover,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Container(
-                      color: Colors.grey[200],
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded / 
-                                loadingProgress.expectedTotalBytes!
-                              : null,
-                        ),
-                      ),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.error),
-                    );
-                  },
-                ),
-              ),
+          borderRadius: BorderRadius.circular(16),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              // Calcular altura disponível para o conteúdo
+              final imageHeight = constraints.maxWidth * 9 / 16; // Aspect ratio 16:9
+              final availableContentHeight = constraints.maxHeight - imageHeight;
               
-              // Content area with better padding - less padding for compact mode
-              Padding(
-                padding: isCompact 
-                    ? const EdgeInsets.all(8.0)
-                    : const EdgeInsets.all(16.0),
+              return SizedBox(
+                height: constraints.maxHeight,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      cocktail.name,
-                      style: isCompact
-                          ? Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            )
-                          : Theme.of(context).textTheme.titleLarge,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    // Container da imagem com altura fixa
+                    SizedBox(
+                      height: imageHeight,
+                      child: Stack(
+                        children: [
+                          // Imagem
+                          SizedBox.expand(
+                            child: Image.network(
+                              cocktail.imageUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: Colors.grey[300],
+                                  child: const Icon(
+                                    Icons.local_bar,
+                                    size: 50,
+                                    color: Colors.grey,
+                                  ),
+                                );
+                              },
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Container(
+                                  color: Colors.grey[300],
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      value: loadingProgress.expectedTotalBytes != null
+                                          ? loadingProgress.cumulativeBytesLoaded /
+                                              loadingProgress.expectedTotalBytes!
+                                          : null,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          
+                          // Botão de favorito
+                          if (!isDemoItem)
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.9),
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.2),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: () {
+                                      if (isFavorite) {
+                                        favoritesProvider.removeFavorite(cocktail.id);
+                                      } else {
+                                        favoritesProvider.addFavorite(cocktail);
+                                      }
+                                    },
+                                    borderRadius: BorderRadius.circular(20),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Icon(
+                                        isFavorite ? Icons.favorite : Icons.favorite_border,
+                                        color: isFavorite ? Colors.red : Colors.grey[600],
+                                        size: 20,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 4.0),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.secondaryContainer,
-                        borderRadius: BorderRadius.circular(4.0),
-                      ),
-                      child: Text(
-                        cocktail.category,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSecondaryContainer,
-                          fontWeight: FontWeight.w500,
-                          fontSize: isCompact ? 10.0 : 12.0,
+                    
+                    // Conteúdo com altura restrita
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: LayoutBuilder(
+                          builder: (context, contentConstraints) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Nome do coquetel
+                                Flexible(
+                                  child: Text(
+                                    cocktail.name,
+                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                
+                                const SizedBox(height: 8),
+                                
+                                // Categoria
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    cocktail.category,
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Theme.of(context).colorScheme.primary,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                                
+                                const SizedBox(height: 8),
+                                
+                                // Instruções com altura flexível
+                                Expanded(
+                                  child: Text(
+                                    cocktail.instructions,
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Colors.grey[600],
+                                    ),
+                                    maxLines: isCompact ? 2 : 3,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    if (!isCompact) const SizedBox(height: 8.0),
-                    if (!isCompact || MediaQuery.of(context).size.width > 1200)
-                      Text(
-                        cocktail.instructions,
-                        maxLines: isCompact ? 2 : 3,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          height: 1.5,
-                          fontSize: isCompact ? 12.0 : null,
-                        ),
-                      ),
                   ],
                 ),
-              ),
-              
-              // Adicionar botão de favorito
-              Positioned(
-                top: 8,
-                right: 8,
-                child: CircleAvatar(
-                  backgroundColor: Colors.white.withOpacity(0.8),
-                  child: IconButton(
-                    icon: Icon(
-                      isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: isFavorite ? Colors.red : Colors.grey,
-                    ),
-                    onPressed: () {
-                      favoritesProvider.toggleFavorite(cocktail);
-                    },
-                  ),
-                ),
-              ),
-            ],
+              );
+            },
           ),
         ),
       ),

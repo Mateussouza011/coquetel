@@ -1,3 +1,46 @@
+# Aplicativo Flutter de Coquetéis - Como Funciona
+
+Este é um aplicativo que mostra uma lista de coquetéis com receitas e ingredientes. Vou explicar como funciona de forma simples.
+
+## O que o app faz?
+
+- Mostra uma lista de coquetéis em cards bonitos
+- Permite pesquisar coquetéis pelo nome
+- Filtra por categorias (como "Cocktail", "Shot", etc.)
+- Mostra detalhes completos de cada drink
+- Salva favoritos
+- Funciona em português, inglês, espanhol e francês
+
+## Como está organizado?
+
+### 📱 Telas (screens)
+- **Splash**: Tela inicial com logo
+- **Timeline**: Tela principal com lista de drinks
+- **Detalhes**: Mostra receita completa
+- **Favoritos**: Lista dos drinks salvos
+- **Loading**: Tela de carregamento
+- **Erro**: Quando algo dá errado
+
+### 🧩 Componentes (widgets)
+- **CocktailCard**: Cada card de drink na lista
+- **AppBottomNav**: Barra de navegação inferior
+
+### 📊 Dados (models)
+- **Cocktail**: Representa um drink com nome, foto, ingredientes, etc.
+
+### 🌐 Serviços (services)
+- **CocktailService**: Busca dados dos coquetéis na internet
+- **ApiService**: Faz as requisições para a API
+
+## De onde vêm os dados?
+
+Os dados vêm da API TheCocktailDB (thecocktaildb.com), que é gratuita e tem milhares de receitas de drinks.
+
+```dart
+// URL da API
+https://www.thecocktaildb.com/api/json/v1/1
+```
+
 # Principais aspectos do código do aplicativo Coquetel
 
 Vou explicar as partes mais importantes do código excluindo o sistema multilinguagem:
@@ -114,7 +157,3 @@ final cardCrossAxisCount = isLargeScreen ? 3 : 1;
 ```
 
 Esta abordagem garante uma boa experiência tanto em dispositivos móveis quanto em tablets.
-
----
-
-Estas são as partes fundamentais do aplicativo que demonstram um design de software organizado e modular, seguindo as boas práticas de desenvolvimento em Flutter.

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
-import '../routes/app_routes.dart';
+import '../core/app_core.dart';
 
 class AppBottomNav extends StatelessWidget {
   final int currentIndex;

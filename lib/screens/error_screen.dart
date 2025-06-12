@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
-import '../routes/app_routes.dart';
+import '../core/app_core.dart';
 
 class ErrorScreen extends StatelessWidget {
   const ErrorScreen({Key? key, this.errorMessage}) : super(key: key);
@@ -39,12 +39,35 @@ class ErrorScreen extends StatelessWidget {
               const SizedBox(height: 32),
               ElevatedButton.icon(
                 icon: const Icon(Icons.refresh),
-                label: Text(localizations.backToHome ?? "Back to Home"),
+                label: Text(localizations.tryAgain ?? "Try Again"),
                 onPressed: () {
-                  Navigator.of(context).pushReplacementNamed(AppRoutes.timeline);
+                  if (Navigator.canPop(context)) {
+                    Navigator.pop(context);
+                  } else {
+                    Navigator.of(context).pushReplacementNamed(AppRoutes.timeline);
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.home),
+                label: Text(localizations.backToHome ?? "Back to Home"),
+                onPressed: () {
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    AppRoutes.timeline,
+                    (route) => false,
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  side: BorderSide(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               ),
             ],
